@@ -14,14 +14,10 @@ const firebaseConfig = {
 // Firebase アプリを初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-// Firestore からデータを取得する関数
-// Firestore から `users/data001` を取得する関数
-// Firebase 初期化
-
 // もっとも最近追加されたデータを取得する 
 const fetchUserData = async () => {
   try {
-    const q = query(collection(db, "users"), orderBy("timestamp", "desc"));
+    const q = query(collection(db, "users"), orderBy("timestamp", "desc"), limit(1));
     console.log(q);
     const querySnapshot = await getDocs(q);
 
@@ -120,6 +116,7 @@ const updateTokens = async (accessToken, refreshToken) => {
 
 const saveToFirestore = async (value) => {
     try {
+        
         const usersCollection = collection(db, "users");
 
 /*         // 最初の保存時のみ削除処理を実行
@@ -146,10 +143,23 @@ const saveToFirestore = async (value) => {
         console.error("エラー:", error);
     }
 };
+const getFitbitConfigNames = async() =>{
+  try{
+    const configRef = collection(db, "config");
+    const configSnap = await getDocs(configRef);
+    if(!configSnap.empty){
+      const configNames = configSnap.docs.map(doc => doc.id);
+      return configNames
+    }
 
-const getFitbitConfig = async () => {
+  }catch(error){
+    console.error("ドキュメントエラー", error);
+    return null;
+  }
+}
+const getFitbitConfig = async (configName) => {
     try {
-      const configRef = doc(db, "config", "config2");
+      const configRef = doc(db, "config", configName);
       const configSnap = await getDoc(configRef);
   
       if (configSnap.exists()) {
@@ -168,5 +178,5 @@ const getFitbitConfig = async () => {
       return null;
     }
   };
-
-export { db, saveToFirestore, updateTokens, getFitbitConfig, updateAccessToken, fetchUserData};
+ 
+export { db, saveToFirestore, updateTokens, getFitbitConfig, updateAccessToken, fetchUserData, getFitbitConfigNames};
