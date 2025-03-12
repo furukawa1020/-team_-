@@ -6,7 +6,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement,
+   LineElement,
   Title,
   Tooltip,
   Legend
