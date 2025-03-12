@@ -1,9 +1,0 @@
-{
-"client_id": "23Q37W",
-"client_secret": "5633b28150d67814db3840c53111f01b",
-"access_token":"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyM1EzN1ciLCJzdWIiOiJDSEZMQjUiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJyc29jIHJlY2cgcnNldCByaXJuIHJveHkgcnBybyBybnV0IHJzbGUgcmNmIHJhY3QgcmxvYyBycmVzIHJ3ZWkgcmhyIHJ0ZW0iLCJleHAiOjE3NDA5ODAwNzIsImlhdCI6MTc0MDk1MTI3Mn0.UPf4tYuPOHSKf_GRcIXIVgqQnUqv04CFwg6CE3J8OX4",
-"expires_in":28800,
-"refresh_token":"f181ae57a675cb3eb53223b2d238f8a2eb9ba21021503d3df26733f08b396ff3",
-"scope":"profile activity electrocardiogram location settings temperature heartrate sleep cardio_fitness nutrition irregular_rhythm_notifications social oxygen_saturation respiratory_rate weight",
-"token_type":"Bearer",
-"user_id":"CHFLB5"}
