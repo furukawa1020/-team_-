@@ -3,6 +3,7 @@ import { Line } from "react-chartjs-2";
 import { connectToESP32, sendCommand } from "./BluetoothService";
 import { fetchUserData } from "./firebase.js"; // Firebase からデータ取得
 import { relaxLogistic } from "./MathFunc"; // 0-100 に変換
+import FuguGraphic from "./FuguGraphic"; // フグのグラフィックを追加
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -127,18 +128,25 @@ function App() {
 
       {/* 取得したリラックス値の表示 */}
       <div className="mb-8 text-center">
-        <p className="text-lg">現在のリラックス値 (生データ): <span className="font-bold text-blue-600">{relaxValue !== null ? relaxValue : "取得中..."}</span></p>
-        <p className="text-lg">30秒前のリラックス値: <span className="font-bold text-gray-600">{prevRelaxValue !== null ? prevRelaxValue : "N/A"}</span></p>
-        <p className="text-lg">変換後のストレス値 (0-100): <span className="font-bold text-green-600">{relaxValue !== null ? relaxLogistic(relaxValue).toFixed(2) : "計算中..."}</span></p>
-        <p className="text-lg">計算された n 値 (秒数): <span className={`font-bold ${nValue > 0 ? "text-red-600" : "text-blue-600"}`}>{nValue.toFixed(2)}</span></p>
         <p className="text-lg">
-          フグの状態:{" "}
-          {nValue > 0 ? (
-            <span className="text-red-600 font-bold">膨張 (LED点灯)</span>
-          ) : (
-            <span className="text-blue-600 font-bold">収縮 (LED消灯)</span>
-          )}
+          現在のリラックス値 (生データ):{" "}
+          <span className="font-bold text-blue-600">{relaxValue !== null ? relaxValue : "取得中..."}</span>
         </p>
+        <p className="text-lg">
+          30秒前のリラックス値:{" "}
+          <span className="font-bold text-gray-600">{prevRelaxValue !== null ? prevRelaxValue : "N/A"}</span>
+        </p>
+        <p className="text-lg">
+          変換後のストレス値 (0-100):{" "}
+          <span className="font-bold text-green-600">
+            {relaxValue !== null ? relaxLogistic(relaxValue).toFixed(2) : "計算中..."}
+          </span>
+        </p>
+      </div>
+
+      {/* フグのアニメーション */}
+      <div className="flex justify-center mb-8">
+        <FuguGraphic stressValue={relaxLogistic(relaxValue)} />
       </div>
 
       {/* グラフ表示 */}
