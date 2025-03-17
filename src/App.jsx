@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { connectToESP32, sendCommand } from "./BluetoothService";
 import { fetchUserData } from "./firebase.js"; // Firebase からデータ取得
+import { relaxLogistic } from "./MathFunc"; // 0-100 に変換
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,7 +21,7 @@ function App() {
   // リラックス値（心拍数の逆数）
   const [relaxValue, setRelaxValue] = useState(null);
   const [prevRelaxValue, setPrevRelaxValue] = useState(null);
-  const [relaxHistory, setRelaxHistory] = useState([]);
+  const [mappedHistory, setMappedHistory] = useState([]); // 0-100 に変換したデータ
   const [timeLabels, setTimeLabels] = useState([]);
   const [device, setDevice] = useState(null);
   const [characteristic, setCharacteristic] = useState(null);
@@ -34,7 +35,7 @@ function App() {
       if (newData && newData.data && newData.data.value) {
         const newRelaxValue = newData.data.value;
 
-        // 30秒前のデータを更新（初回のみnullの可能性があるので、その場合はそのまま）
+        // 30秒前のデータを更新
         setPrevRelaxValue(relaxValue);
         setRelaxValue(newRelaxValue);
       }
@@ -55,23 +56,20 @@ function App() {
       const n = (25 * e) / Math.max(Math.abs(e), 0.8); // n の計算式
       setNValue(n);
 
+      // 0-100 に変換したストレス値
+      const stressMapped = relaxLogistic(relaxValue);
+
       // BLE 経由で ESP32 に送信
       if (characteristic) {
         sendCommand(characteristic, Math.round(n));
       }
 
       // 履歴データの更新（最新の30ポイントを保持）
-      setRelaxHistory((prev) => {
-        const newHistory = [...prev, relaxValue];
-        return newHistory.slice(-30);
-      });
+      setMappedHistory((prev) => [...prev.slice(-29), stressMapped]);
 
       // 時間ラベルの更新
       const currentTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      setTimeLabels((prev) => {
-        const newLabels = [...prev, `${currentTime}秒`];
-        return newLabels.slice(-30);
-      });
+      setTimeLabels((prev) => [...prev.slice(-29), `${currentTime}秒`]);
     }
   }, [relaxValue, prevRelaxValue, characteristic]);
 
@@ -80,10 +78,10 @@ function App() {
     labels: timeLabels,
     datasets: [
       {
-        label: "リラックス値",
-        data: relaxHistory,
-        borderColor: "rgb(75, 192, 192)",
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        label: "ストレス値 (0-100 に変換)",
+        data: mappedHistory,
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
         tension: 0.1,
       },
     ],
@@ -94,9 +92,11 @@ function App() {
     responsive: true,
     scales: {
       y: {
+        min: 0,
+        max: 100,
         title: {
           display: true,
-          text: "リラックス値",
+          text: "ストレス値 (0-100)",
         },
       },
       x: {
@@ -127,8 +127,9 @@ function App() {
 
       {/* 取得したリラックス値の表示 */}
       <div className="mb-8 text-center">
-        <p className="text-lg">現在のリラックス値: <span className="font-bold text-blue-600">{relaxValue !== null ? relaxValue : "取得中..."}</span></p>
+        <p className="text-lg">現在のリラックス値 (生データ): <span className="font-bold text-blue-600">{relaxValue !== null ? relaxValue : "取得中..."}</span></p>
         <p className="text-lg">30秒前のリラックス値: <span className="font-bold text-gray-600">{prevRelaxValue !== null ? prevRelaxValue : "N/A"}</span></p>
+        <p className="text-lg">変換後のストレス値 (0-100): <span className="font-bold text-green-600">{relaxValue !== null ? relaxLogistic(relaxValue).toFixed(2) : "計算中..."}</span></p>
         <p className="text-lg">計算された n 値 (秒数): <span className={`font-bold ${nValue > 0 ? "text-red-600" : "text-blue-600"}`}>{nValue.toFixed(2)}</span></p>
         <p className="text-lg">
           フグの状態:{" "}
@@ -142,7 +143,7 @@ function App() {
 
       {/* グラフ表示 */}
       <div className="bg-white rounded-lg p-4 shadow">
-        <h2 className="text-xl font-semibold mb-4">リラックス値の推移</h2>
+        <h2 className="text-xl font-semibold mb-4">ストレス値の推移 (0-100 に変換)</h2>
         <div className="h-64">
           <Line data={chartData} options={chartOptions} />
         </div>
